@@ -13,6 +13,9 @@ public class Shooter extends SubsystemBase {
     private CANSparkMax shooterUpperMotor;
     private CANSparkMax shooterIndexMotor;
 
+    private boolean slow;
+    private boolean fast;
+
     public Shooter() {
         speed = 0;
         shooterLowerMotor = new CANSparkMax(ShooterConstants.kShooterLowerMotorCanID, MotorType.kBrushless);
@@ -26,12 +29,25 @@ public class Shooter extends SubsystemBase {
         shooterLowerMotor.burnFlash();
         shooterUpperMotor.burnFlash();
         shooterIndexMotor.burnFlash();
+
+        slow = false;
+        fast = false;
     }
 
     public void shoot() {
-        shooterLowerMotor.setVoltage(-3);
-        shooterUpperMotor.setVoltage(3);
-        shooterIndexMotor.setVoltage(-3);
+        if(!fast) {
+            shooterLowerMotor.setVoltage(-3);
+            shooterUpperMotor.setVoltage(3);
+            shooterIndexMotor.setVoltage(-3);
+        }
+        slow = true;
+    }
+
+    public void fastShoot() {
+        shooterLowerMotor.setVoltage(-6);
+        shooterUpperMotor.setVoltage(6);
+        shooterIndexMotor.setVoltage(-6);
+        fast = true;
     }
 
     public void rest() {
@@ -40,11 +56,33 @@ public class Shooter extends SubsystemBase {
         shooterIndexMotor.setVoltage(0);
     }
 
+    public void slowRest() {
+        slow = false;
+        if(!fast) rest();
+        
+    }
+
+    public void fastRest() {
+        fast = false;
+        if(!slow) rest();
+    }
+
     public Command runShoot() {
         return runOnce(() -> shoot());
     }
-    
+
+    public Command runFastShoot() {
+        return runOnce(() -> fastShoot());
+    }
+
     public Command runRest() {
         return runOnce(() -> rest());
+    }
+
+    public Command runSlowRest() {
+        return runOnce(() -> slowRest());
+    }
+    public Command runFastRest() {
+        return runOnce(() -> fastRest());
     }
 }
